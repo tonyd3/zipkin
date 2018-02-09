@@ -1,5 +1,5 @@
 /**
- * Copyright 2015-2017 The OpenZipkin Authors
+ * Copyright 2015-2018 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -113,4 +113,28 @@ public class ZipkinElasticsearchAwsStorageAutoConfigurationTest {
     thrown.expect(NoSuchBeanDefinitionException.class);
     context.getBean(AWSSignatureVersion4.class);
   }
+
+  @Test
+  public void useEmptyCredentials_whenUseEmptyCredentialsIsTrue() {
+    context = new AnnotationConfigApplicationContext();
+    addEnvironment(context,
+      "zipkin.storage.type:elasticsearch",
+      "zipkin.storage.elasticsearch.hosts:https://search-domain-xyzzy.us-west-2.es.amazonaws.com",
+      "zipkin.storage.elasticsearch.aws.use-empty-credentials:true",
+      "zipkin.storage.elasticsearch.aws.domain:foobar"
+    );
+    context.register(PropertyPlaceholderAutoConfiguration.class,
+      ZipkinElasticsearchOkHttpAutoConfiguration.class,
+      ZipkinElasticsearchAwsStorageAutoConfiguration.class);
+    context.refresh();
+
+    ZipkinElasticsearchAwsStorageProperties properties = context.getBean(ZipkinElasticsearchAwsStorageProperties.class);
+    assertThat(properties.getUseEmptyCredentials()).isTrue();
+
+    AWSCredentials.Provider creds =
+      context.getBean(ZipkinElasticsearchAwsStorageAutoConfiguration.class).credentials(properties);
+
+    assertThat(creds.get().sessionToken).isNull();
+  }
+
 }

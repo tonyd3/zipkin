@@ -1,5 +1,5 @@
 /**
- * Copyright 2015-2017 The OpenZipkin Authors
+ * Copyright 2015-2018 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -90,7 +90,17 @@ public class ZipkinElasticsearchAwsStorageAutoConfiguration {
   /** By default, get credentials from the {@link DefaultAWSCredentialsProviderChain} */
   @Bean
   @ConditionalOnMissingBean
-  AWSCredentials.Provider credentials() {
+  AWSCredentials.Provider credentials(
+    ZipkinElasticsearchAwsStorageProperties aws
+  ) {
+    if (aws.getUseEmptyCredentials()) {
+      return new AWSCredentials.Provider() {
+        @Override public AWSCredentials get() {
+          return new AWSCredentials("", "", null);
+        }
+      };
+    }
+
     return new AWSCredentials.Provider() {
       AWSCredentialsProvider delegate = new DefaultAWSCredentialsProviderChain();
 

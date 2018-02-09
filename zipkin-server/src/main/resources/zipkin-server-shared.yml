@@ -108,6 +108,7 @@ zipkin:
       aws:
         domain: ${ES_AWS_DOMAIN:}
         region: ${ES_AWS_REGION:}
+        use-empty-credentials: ${ES_AWS_USE_EMPTY_CREDENTIALS:false}
       index: ${ES_INDEX:zipkin}
       date-separator: ${ES_DATE_SEPARATOR:-}
       index-shards: ${ES_INDEX_SHARDS:5}
